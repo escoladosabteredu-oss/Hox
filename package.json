@@ -1,0 +1,19 @@
+{
+  "name": "hox-checkuser-vps",
+  "version": "2.0.0",
+  "description": "HoxTunnel compatible CheckUser API for user VPS machines",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "NODE_ENV=development node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "ISC"
+}

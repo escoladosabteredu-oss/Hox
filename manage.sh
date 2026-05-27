@@ -36,11 +36,6 @@ desinstalar() {
   echo -e "${GREEN}Removido com sucesso!${NC}"
 }
 
-ativar() {
-  systemctl start $SERVICE
-  echo -e "${GREEN}Serviço ativado!${NC}"
-}
-
 desativar() {
   systemctl stop $SERVICE
   echo -e "${YELLOW}Serviço desativado!${NC}"
@@ -54,13 +49,6 @@ logs() {
   journalctl -u $SERVICE -f --no-pager
 }
 
-atualizar() {
-  echo -e "${CYAN}==> Atualizando...${NC}"
-  curl -fsSL "$RAW/index.js" -o "$APP_DIR/index.js"
-  systemctl restart $SERVICE
-  echo -e "${GREEN}Atualizado e reiniciado!${NC}"
-}
-
 while true; do
   echo ""
   echo -e "${CYAN}=============================="
@@ -68,24 +56,20 @@ while true; do
   echo -e "==============================${NC}"
   echo "1) Instalar"
   echo "2) Desinstalar"
-  echo "3) Ativar serviço"
-  echo "4) Desativar serviço"
-  echo "5) Status"
-  echo "6) Ver logs"
-  echo "7) Atualizar"
-  echo "8) Sair"
+  echo "3) Desativar serviço"
+  echo "4) Status"
+  echo "5) Ver logs"
+  echo "6) Sair"
   echo ""
   read -rp "Escolha: " opcao
 
   case $opcao in
     1) instalar ;;
     2) desinstalar ;;
-    3) ativar ;;
-    4) desativar ;;
-    5) status ;;
-    6) logs ;;
-    7) atualizar ;;
-    8) echo "Saindo..."; exit 0 ;;
+    3) desativar ;;
+    4) status ;;
+    5) logs ;;
+    6) echo "Saindo..."; exit 0 ;;
     *) echo -e "${RED}Opção inválida!${NC}" ;;
   esac
 done

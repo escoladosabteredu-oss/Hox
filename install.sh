@@ -9,38 +9,38 @@ NC='\033[0m'
 APP_DIR='/opt/hox-checkuser'
 ENV_DIR='/etc/checkuser'
 SERVICE_FILE='/etc/systemd/system/hox-checkuser.service'
+RAW='https://raw.githubusercontent.com/escoladosabteredu-oss/Hox/main'
 
 if [ "${EUID}" -ne 0 ]; then
-  echo -e "${RED}Run as root: sudo bash install.sh${NC}"
+  echo -e "${RED}Execute como root: sudo bash install.sh${NC}"
   exit 1
 fi
 
-echo -e "${GREEN}Installing HoxTunnel CheckUser API...${NC}"
+echo -e "${GREEN}==> Instalando HoxTunnel CheckUser API...${NC}"
 
 if ! command -v node >/dev/null 2>&1; then
-  echo -e "${YELLOW}Node.js was not found. Installing Node.js 20 from NodeSource...${NC}"
-  apt-get update
+  echo -e "${YELLOW}Node.js não encontrado. Instalando Node.js 20...${NC}"
+  apt-get update -qq
   apt-get install -y ca-certificates curl gnupg
   mkdir -p /etc/apt/keyrings
   curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
   echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
-  apt-get update
+  apt-get update -qq
   apt-get install -y nodejs
 fi
 
-apt-get update
-apt-get install -y passwd procps coreutils
+apt-get install -y passwd procps coreutils -qq
 
 mkdir -p "$APP_DIR" "$ENV_DIR"
-cp index.js package.json "$APP_DIR"/
-if [ -f package-lock.json ]; then cp package-lock.json "$APP_DIR"/; fi
+curl -fsSL "$RAW/index.js" -o "$APP_DIR/index.js"
+curl -fsSL "$RAW/package.json" -o "$APP_DIR/package.json"
 
 cd "$APP_DIR"
-npm install --omit=dev
+npm install --omit=dev --silent
 
-read -rp "Port [9000]: " PORT_INPUT
+read -rp "Porta [9000]: " PORT_INPUT
 PORT_INPUT=${PORT_INPUT:-9000}
-read -rp "Default limit_connections [1]: " LIMIT_INPUT
+read -rp "Limite de conexões [1]: " LIMIT_INPUT
 LIMIT_INPUT=${LIMIT_INPUT:-1}
 
 cat > "$ENV_DIR/.env" <<ENVEOF
@@ -57,9 +57,7 @@ VERBOSE=false
 ENVEOF
 chmod 600 "$ENV_DIR/.env"
 
-if [ ! -f "$ENV_DIR/limits.json" ]; then
-  echo '{}' > "$ENV_DIR/limits.json"
-fi
+[ ! -f "$ENV_DIR/limits.json" ] && echo '{}' > "$ENV_DIR/limits.json"
 chmod 600 "$ENV_DIR/limits.json"
 
 cat > "$SERVICE_FILE" <<EOF2
@@ -87,8 +85,14 @@ systemctl daemon-reload
 systemctl enable hox-checkuser
 systemctl restart hox-checkuser
 
-echo -e "${GREEN}Done.${NC}"
-echo "Status:  systemctl status hox-checkuser --no-pager"
-echo "Logs:    journalctl -u hox-checkuser -f"
-echo "Test:    curl http://127.0.0.1:$PORT_INPUT/check/root"
-echo "Panel config url_check_user suggestion: http://YOUR_VPS_IP:$PORT_INPUT/check/"
+# Instala o comando 'hox'
+curl -fsSL "$RAW/manage.sh" -o /usr/local/bin/hox
+chmod +x /usr/local/bin/hox
+
+echo -e "${GREEN}"
+echo "╔══════════════════════════════════════════╗"
+echo "║  HoxTunnel CheckUser instalado!          ║"
+echo "║  Digite 'hox' para abrir o gerenciador   ║"
+echo "╚══════════════════════════════════════════╝"
+echo -e "${NC}"
+echo "  Teste: curl http://127.0.0.1:$PORT_INPUT/check/root"
